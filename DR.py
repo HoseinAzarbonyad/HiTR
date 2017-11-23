@@ -68,13 +68,17 @@ class DR(object):
 			#print PLM.docLM[PLM.docLM > 0]
 			new_doc = self.regenerateDoc(docId, PLM.docLM, docLen)
 			docId += 1
-			if len(doc) > 0:
-				new_corpus.append(new_doc)
+			#if len(doc) > 0:
+			new_corpus.append(new_doc)
+			del DLM
+			del PLM
 			#print PLM.docLM
+		del self.corpus
 		gensim.corpora.MmCorpus.serialize("mtsamples-tmp.mm", new_corpus)
 		self.corpus = gensim.corpora.MmCorpus("mtsamples-tmp.mm")
 		print self.corpus[10]
 		print len(self.corpus)
+		del CLM
 
 	def regenerateDoc(self, docId, LM, docLen):
 		index = 0

@@ -35,19 +35,19 @@ class CollectionLM(object):
             for tok in doc:
                 if self.dictionary[tok[0]] not in stoplist:
                     count[tok[0]] += tok[1]
-            cf = np.empty(len(self.dictionary), dtype=np.float)
-            
-            for i, f in count.iteritems():
-                cf[i] = f
-            
-            try:
-                old_error_settings = np.seterr(divide='ignore')
+        cf = np.empty(len(self.dictionary), dtype=np.float)
+        
+        for i, f in count.iteritems():
+            cf[i] = f
+        
+        try:
+            old_error_settings = np.seterr(divide='ignore')
 
-                self.LM = cf / np.sum(cf)
-            finally:
-                np.seterr(**old_error_settings)
-            
-            self.termFreq = count
+            self.LM = cf / np.sum(cf)
+        finally:
+            np.seterr(**old_error_settings)
+        
+        self.termFreq = count
     def buildTMcollectionLM(self):
         count = defaultdict(float)
         

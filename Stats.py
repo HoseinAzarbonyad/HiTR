@@ -19,12 +19,12 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s',
 
 class Stats(object):
     def __init__(self, corpus, dictionary, outPutPath):
-        logger.info("Running HiTR")
+        #logger.info("Running HiTR")
         #self.documentsPath = documentsPath
         self.corpus = corpus
-        self.ldaPath = ldaPath
+        #self.ldaPath = ldaPath
         self.outPutPath = outPutPath
-        self.numTopics = numTopics
+        #self.numTopics = numTopics
         #self.mu = mu
         #self.threshold = threshold
         #self.numIteration = numIteration
@@ -32,46 +32,59 @@ class Stats(object):
         
     def calcStats(self):
         logger.info("Running DR")
-        mu = {0.01, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9}
-        threshold = {0.001, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.3}
+        mu = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+        #mu = [0.8]
+        threshold = [0.001, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2]
         stats = {}
-        vocabFile = open(os.path.join(self.outPutPath, "docVocabSizes.txt"), 'w')
-        typeTokenFile = open(os.path.join(self.outPutPath, "docTypeTokenRatios.txt"), 'w')
-        p_movedFile = open(os.path.join(self.outPutPath, "p_moved.txt"), 'w')
+        vocabFile = open(os.path.join(self.outPutPath, "docVocabSizes-all.txt"), 'w')
+        typeTokenFile = open(os.path.join(self.outPutPath, "docTypeTokenRatios-all.txt"), 'w')
+        p_movedFile = open(os.path.join(self.outPutPath, "p_moved-all.txt"), 'w')
         for m in mu:
-            stats[mu] = {}
+            stats[m] = {}
             for th in threshold:
+                if os.path.isfile("mtsamples-tmp.mm"):
+                    os.remove("mtsamples-tmp.mm")
+                if os.path.isfile("mtsamples-tmp.mm.index"):
+                    os.remove("mtsamples-tmp.mm.index")
+                modelPath = "/Users/admin/Downloads/20_newsgroups/Preprocessed-lemmas-shortened-models"
+                dictionary = gensim.corpora.Dictionary.load(os.path.join(modelPath,"mtsamples.dict"))
+                corpus = gensim.corpora.MmCorpus(os.path.join(modelPath,"mtsamples.mm"))
+                print "DR for: " + str(m) + " " + str(th)
                 dr = DR(corpus, dictionary, m, th, 20)
                 dr.runDR()  
-                vocabSize = calcVocabSize(dr.corpus)
-                avgDocVocabSize, docVocabSizes = calcDocVocabSize(dr.corpus)
-                avgTypeTokenRatio, docTypeTokenRatios  = calcTypeTokenRatio(dr.corpus)
-                avgp_moved, p_moved = calcp_moved(self.corpus, corpus)
-
+                vocabSize = self.calcVocabSize(dr.corpus)
+                avgDocVocabSize, docVocabSizes = self.calcDocVocabSize(dr.corpus)
+                avgTypeTokenRatio, docTypeTokenRatios  = self.calcTypeTokenRatio(dr.corpus)
+                avgp_moved, p_moved = self.calcp_moved(corpus, dr.corpus)
+                print str(avgDocVocabSize) + " " + str(avgTypeTokenRatio) + " " + str(avgp_moved)
+                del dr
                 line = ""
-                line += str(mu) + " " + str(th)
+                line += str(m) + " " + str(th) + " "
                 for l in docVocabSizes:
-                    line += l + " "
+                    line += str(l) + " "
                 vocabFile.write(line + "\n")
 
                 line = ""
-                line += str(mu) + " " + str(th)
+                line += str(m) + " " + str(th) + " "
                 for l in docTypeTokenRatios:
-                    line += l + " "
+                    line += str(l) + " "
                 typeTokenFile.write(line + "\n")
 
                 line = ""
-                line += str(mu) + " " + str(th)
+                line += str(m) + " " + str(th) + " "
                 for l in p_moved:
-                    line += l + " "
+                    line += str(l) + " "
                 p_movedFile.write(line + "\n")
 
-                stats[mu][th] = []
-                stats[mu][th].append(vocabSize)
-                stats[mu][th].append(avgDocVocabSize)
-                stats[mu][th].append(avgTypeTokenRatio)
-                stats[mu][th].append(avgp_moved)
-        with open('res.txt', 'wb') as handle:
+                stats[m][th] = []
+                stats[m][th].append(vocabSize)
+                stats[m][th].append(avgDocVocabSize)
+                stats[m][th].append(avgTypeTokenRatio)
+                stats[m][th].append(avgp_moved)
+                del corpus
+                del dictionary
+
+        with open('res-all.txt', 'wb') as handle:
             pickle.dump(stats, handle)
         vocabFile.close()
         typeTokenFile.close()
@@ -93,22 +106,27 @@ class Stats(object):
         avgDocVocabSize = float(sum([len(doc) for doc in corpus])) / len(corpus)
         return avgDocVocabSize, docVocabSizes
 
-    def calcTypeTokenRatio(corpus):
+    def calcTypeTokenRatio(self, corpus):
         uniqueTerms = {}
         corpusSize = 0
+        numTerms = 0
         for doc in corpus:
             for token in doc:
                 if token[0] not in uniqueTerms:
                     uniqueTerms[token[0]] = 1
                     numTerms += 1
-            corpusSize += sum[t[1] for t in doc]
-        avgTypeTokenRatio = float(size(uniqueTerms)) / corpusSize
+            corpusSize += sum([t[1] for t in doc])
+        avgTypeTokenRatio = 0
+        if corpusSize > 0:
+            avgTypeTokenRatio = float(len(uniqueTerms)) / corpusSize
 
-        docTypeTokenRatios = map(truediv, [len(doc) for doc in corpus], [sum([t[1] for t in doc]) for doc in corpus])
-
+        #docTypeTokenRatios = map(truediv, [len(doc) for doc in corpus], [sum([t[1] for t in doc]) for doc in corpus])
+        a = [len(doc) for doc in corpus]
+        b = [sum([t[1] for t in doc]) for doc in corpus]
+        docTypeTokenRatios = [x/y if y else 0 for x,y in zip(a,b)]
         return avgTypeTokenRatio, docTypeTokenRatios
 
-    def calcp_moved(corpus1, corpus2):
+    def calcp_moved(self, corpus1, corpus2):
         docId = 0
         p_moved = []
         for doc in corpus1: 
@@ -121,16 +139,21 @@ class Stats(object):
                 docLen += token[1]
                 if token[0] not in words:
                     sumFreq += token[1]
-            p_moved.append(float(sumFreq) / docLen)
+            p = 0
+            if docLen > 0:
+                p = float(sumFreq) / docLen
+            #p_moved.append(float(sumFreq) / docLen)
+            p_moved.append(p)
+            docId += 1
         avgp_moved = sum(p_moved) / len(p_moved)
         return avgp_moved, p_moved
         
 if __name__ == "__main__":
-    outPutPath = "/Users/admin/Downloads/20_newsgroups/Preprocessed-lemmas-shortened-models"
-    dictionary = gensim.corpora.Dictionary.load(os.path.join(ldaPath,"mtsamples.dict"))
-    corpus = gensim.corpora.MmCorpus(os.path.join(ldaPath,"mtsamples.mm"))
+    modelPath = "/Users/admin/Downloads/20_newsgroups/Preprocessed-lemmas-shortened-models"
+    dictionary = gensim.corpora.Dictionary.load(os.path.join(modelPath,"mtsamples.dict"))
+    corpus = gensim.corpora.MmCorpus(os.path.join(modelPath,"mtsamples.mm"))
 
-    outPutPath = "/Users/admin/Downloads/20_newsgroups/Preprocessed-lemmas-shortened-TAR"
+    outPutPath = "/Users/admin/Downloads/20_newsgroups/stats"
 
     stat = Stats(corpus, dictionary, outPutPath)
     stat.calcStats()
