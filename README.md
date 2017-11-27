@@ -10,7 +10,7 @@ The goal is to remove generality and ambiguity from topic models. General topics
 2. Topic Re-estimation (TR) re-estimates the language model per topic P (w | t) and removes general words from trained topics; 
 3. Topic Assignment Re-estimation (TAR) re-estimates the distribution over topics per document P (t | d) and removes general topics from documents.
 
-#Usage
+# Usage
 
 An example on how to run the code is given in HiTR.py. Depending on the combination of the mentioned re-estimation approaches that you want to use, you can disable or enable them. 
 
