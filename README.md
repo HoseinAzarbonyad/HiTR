@@ -20,7 +20,7 @@ An example on how to run the code is given in HiTR.py. Depending on the combinat
 3. ldapath: the path to where the lda model will be saved.
 4. outPutPath: the path to where the topic-assignments will be saved.
 
-##Output
+## Output
 1. The re-estimated document-term matrix and will be stored in mtsamples-tmp.mm.
 2. The re-estimated topics will be saved as lda-TR.model.
 3. The re-estimated topic-assignments will be returned after running TAR step. 
