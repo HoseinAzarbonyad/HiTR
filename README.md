@@ -1,8 +1,10 @@
 # HiTR
 
-This is the source code for the following paper:
+This is the source code for the following papers:
 
 Hosein Azarbonyad, Mostafa Dehghani, Tom Kenter, Maarten Marx, Jaap Kamps, and Maarten de Rijke, "Hierarchical Re-estimation of Topic Models for Measuring Topical Diversity", In Proceedings of the 39th European Conference on Information Retrieval (ECIR’17), 2017 
+
+Hosein Azarbonyad, Mostafa Dehghani, Tom Kenter, Maarten Marx, Jaap Kamps, and Maarten de Rijke, "HiTR: Hierarchical Topic Model Re-estimation for Measuring Topical Diversity of Documents", To appear in IEEE Transactions on Knowledge and Data Engineering (TKDE)
 
 The goal is to remove generality and impurity from topic models. General topics only include common information from a background corpus and are assigned to most of the documents in the collection. Impure topics contain words that are not related to the topic. A hierarchical re-estimation approach for topic models is developed to combat generality and impurity; the method operates at three levels: words, topics, and documents:
 
